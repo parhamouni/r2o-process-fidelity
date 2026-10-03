@@ -1,0 +1,675 @@
+\appendix
+
+\section{Experimental details and reproducibility}
+\label{app:setup}
+\label{app:experimental}
+
+\subsection{Datasets and configurations}
+
+The experiments use \texttt{dianping}, \texttt{wikirevision},
+\texttt{weibo\_daily}, and \texttt{weibo\_tech} from GDGB. These are the four
+datasets used for the temporal analysis in the main paper. All R2O statistics
+are computed from event timestamps after the same preprocessing used by the
+generation pipeline. Dataset access and preprocessing follow the GDGB release.
+
+The primary analysis contains 16 preregistered configurations. Twelve use
+Qwen3-30B-A3B and cover the four datasets under L0, L1, and L2. L0 reproduces
+GAG General, L1 adds tool use, and L2 additionally includes memory. Four
+archived GPT-4o-Mini configurations provide matched backbone comparisons on
+\texttt{dianping} L0, \texttt{wikirevision} L0 and L1, and
+\texttt{weibo\_tech} L0. A separate exploratory analysis contains eight
+Qwen3-8B configurations covering L0 and L1 on all four datasets. Exploratory
+results are excluded from statements that refer to the 16 preregistered
+configurations.
+
+\subsection{Generation protocol}
+
+Each run conditions on a real prefix containing 1,000 edges and generates a
+continuation of approximately 9,000 events in rounds of 50 events. The main
+evaluation uses the corresponding real continuation from the inherited
+10,000-edge evaluation window. Reference statistics are computed from the
+matched real slots of the same window.
+
+Several archived runs terminate before the nominal horizon. The archived
+Qwen3-30B-A3B runs for \texttt{weibo\_tech} L1,
+\texttt{weibo\_tech} L2, and \texttt{weibo\_daily} L2 are shorter than the
+nominal run. The \texttt{weibo\_daily} L2 structural evaluation is excluded
+because the archived structural output is contaminated, while its timing
+statistics use the archived run produced before contamination. The
+GPT-4o-Mini run for \texttt{wikirevision} L1 contains 7,232 events and the
+GPT-4o-Mini run for \texttt{weibo\_tech} L0 contains 200 generated events.
+Its timing statistics use the same matched-slot procedure at the available
+horizon, while structural statistics are unavailable because the structural
+evaluation lane was not run for such a short stream. Configuration-level
+numbers of scored events are reported in Table~\ref{tab:artifact-controls}.
+
+The exploratory Qwen3-8B L1 runs were stopped at round boundaries because of
+generation time. Their lengths range from 4,900 to 5,696 events. For
+comparisons between exploratory L0 and L1, we therefore also report a
+matched horizon analysis in which the corresponding L0 stream is truncated to
+the L1 event count and rescored using the same procedure.
+
+\subsection{Backbones, serving, and efficiency}
+
+Qwen3-30B-A3B (checkpoint \texttt{Qwen3-30B-A3B-Instruct-2507-FP8}) is served
+locally with vLLM 0.20.0 (FP8 weights, tensor parallel size 1, that is, one
+GPU per server instance, 32,768-token context limit) on a server with eight
+NVIDIA RTX 6000 Ada (48\,GB) GPUs, 64 CPU cores, and 710\,GB RAM, which also
+ran the agent harness. GPT-4o-Mini (\texttt{gpt-4o-mini-2024-07-18}, version pinned) is
+accessed through a commercial API gateway; its harness ran on a 128-core,
+541\,GB server whose two NVIDIA RTX A6000 (48\,GB) GPUs serve only the
+retrieval embedding model. The provider does not expose its serving stack or
+a determinism guarantee, so API runs are not used to estimate variance for the
+local model. The exploratory Qwen3-8B runs use the same API gateway with
+provider reasoning disabled. All three backbones use the same decoding
+configuration in the generation harness (recorded in the harness model
+configuration of every cell): temperature 0.3 and at most 1,024 generated
+tokens per call. Wall-clock generation times were not retained in
+the run archive; per-call token and call counts are retained for the
+exploratory grid (below). All scoring and analysis is CPU only.
+
+For the exploratory Qwen3-8B grid, API accounting gives 1.9 to 2.8 LM calls per
+event for L0 and 2.5 to 4.7 calls per event for L1. L1 uses 1.6 to 2.4$\times$
+more prompt tokens per event than L0. The resulting cost is
+\$4.48 to \$7.77 per cell and \$46.78 for the complete exploratory grid.
+Code, score tables, and the verification gate are available at
+\url{https://github.com/parhamouni/r2o-process-fidelity}. Per-call token usage and call counts are retained in the supplementary
+material.
+
+\subsection{Timing baselines}
+
+Three timing baselines use only the 1,000-edge seed prefix. The Poisson
+baseline estimates a constant event rate from the seed. The empirical IET
+bootstrap samples seed inter-event times independently with replacement. The
+Hawkes baseline fits an exponential Hawkes process to the seed by maximum
+likelihood. These baselines generate event times only and do not generate graph
+structure or text. Reported baseline means and standard deviations use 20
+simulation seeds.
+
+\subsection{Registration and reproducibility}
+\label{app:repro}
+
+The primary configuration set and the main R2O analyses were preregistered.
+The Qwen3-8B arm was added after registration and is labeled exploratory
+throughout the paper.
+
+All analysis code, per configuration scores, matched real-window construction,
+the scheduler and count-conditioning controls, figure and table generation
+scripts, and a verification gate that recomputes every statistic reported in
+the paper from the committed score files are provided in the
+supplementary material and in the public repository. The repository data are read only under the analysis
+scripts, and every figure and table is regenerable from the committed score
+files. Dataset access follows the GDGB release.
+
+The preregistration includes hypotheses, falsifiers, exclusions, a power plan,
+and stop rules, together with the corresponding deviation log. The eight
+exploratory Qwen3-8B cells were generated with the same harness, with provider
+reasoning disabled, temperature 0.3, and \texttt{max\_tokens}=1024. Per-call
+token usage was logged, and the per event accounting above is recomputed from
+those logs by the verification gate.
+
+
+\section{Evaluation landscape}
+\label{app:landscape}
+
+Table~\ref{tab:evaluation-landscape} summarizes how prior graph generation,
+temporal graph generation, language-model-based graph generation, and
+language-model-based social simulation studies evaluate generated data. The
+table is included to place the R2O requirements in the broader evaluation
+landscape. It distinguishes structural, textual, marginal-temporal,
+temporal-dependence, likelihood-based, and closed loop evaluation. The main
+paper uses this comparison for positioning and does not rely on it for the
+formal results.
+
+\input{tab_landscape}
+
+\section{R2O definitions, proofs, and synthetic validation}
+\label{app:proofs}
+\label{app:r2o-definitions}
+
+\subsection{Metric definitions}
+
+For an actor with IET sequence $\tau_1,\ldots,\tau_k$, burstiness is
+\[
+B=\frac{\sigma_\tau-\mu_\tau}{\sigma_\tau+\mu_\tau},
+\]
+where $\mu_\tau$ and $\sigma_\tau$ are the mean and standard deviation of the
+IETs.
+This definition follows the standard burstiness formulation \citep{goh2008burstiness}. The memory coefficient is the lag 1 Pearson correlation between
+consecutive IETs, computed within actors and pooled using the available
+adjacent pairs. The use of consecutive intervals follows prior work on temporal memory \citep{goh2008burstiness,karsai2012universal}. Global lag 1 autocorrelation applies the same dependence
+calculation to the globally ordered IET sequence.
+
+The Rhythm axis uses the KS distance between pooled generated and real IET
+distributions, the Wasserstein distance between log IET distributions, the
+absolute burstiness difference, and node-rhythm divergence. Node-rhythm
+divergence is the median actor specific KS distance between the generated and
+real IET distributions for the same actor. Rate uses the absolute log-duration
+ratio. Order uses the absolute memory difference and the absolute difference
+in global lag 1 autocorrelation.
+
+These statistics keep the three R2O axes distinct. Rate responds directly to a
+change in time scale. Rhythm statistics depend on the IET distribution but not
+on the sequential order of the intervals. Order statistics depend on
+consecutive intervals and are invariant to uniform rescaling of time.
+
+\subsection{Detailed non identification construction and proof}
+
+The compact statement in Proposition~\ref{prop:nonident} combines the two
+order sensitivity results used in the main paper. The first result uses the
+following explicit construction. Let $F$ be any IET distribution with finite
+variance. Let $P_0$ generate each actor's IETs independently from $F$, and let
+$P_\rho$ generate them from a stationary Gaussian copula AR(1) process with the
+same marginal $F$ and parameter $\rho\in(0,1)$. If partner and text choices are
+identical and independent of event timing, then $P_0$ and $P_\rho$ have
+identical per actor IET marginals, identical burstiness, and identical
+distributions for every state statistic, while $M(P_\rho)>0=M(P_0)$.
+
+Let the latent process satisfy
+\[
+z_j=\rho z_{j-1}+\sqrt{1-\rho^2}\,\epsilon_j,
+\]
+with standard Gaussian innovations, and define
+\[
+\tau_j=F^{-1}\!\left(\Phi(z_j)\right).
+\]
+For every value of $\rho$, the marginal distribution of $\tau_j$ is $F$.
+The per-actor IET multisets, burstiness, and every statistic that depends only
+on the IET marginals therefore have the same distribution under $P_0$ and
+$P_\rho$. Partner and text choices are identical and independent of timing, so
+the time aggregated graph and every state statistic also have the same
+distribution. The map $F^{-1}\circ\Phi$ is non-decreasing. Positive dependence
+in the latent AR(1) sequence therefore induces positive dependence between
+consecutive IETs for $\rho>0$, while the dependence vanishes when $\rho=0$.
+Hence $M(P_\rho)>0=M(P_0)$.
+
+\subsection{Shuffle invariance}
+
+\paragraph{Proof of Proposition~\ref{prop:shuffle}}
+The shuffle operator changes the order of an actor's IETs but not the edge
+multiset or the IET multiset. It therefore leaves the time aggregated graph and
+every state or marginal timing statistic unchanged.
+
+For an exchangeable sequence of $k$ IETs with sample mean $\bar{\tau}$ and
+population sample variance $s^2$,
+\[
+\sum_{i\neq j}(\tau_i-\bar{\tau})(\tau_j-\bar{\tau})=-ks^2.
+\]
+A uniformly selected ordered pair of distinct positions therefore has expected
+cross product $-s^2/(k-1)$. The expected lag 1 Pearson correlation after a
+uniform permutation is consequently
+\[
+-\frac{1}{k-1}+o(1/k).
+\]
+Pooling adjacent pairs within actors preserves the $O(1/k_u)$ behavior stated
+in Proposition~\ref{prop:shuffle}.
+
+\subsection{Separation under rate changes}
+
+\paragraph{Proof of Proposition~\ref{prop:separation}}
+Under the transformation $\tau\mapsto a\tau$ with $a>0$, both the mean and
+standard deviation of the IETs are multiplied by $a$. Their ratio in the
+burstiness coefficient is therefore unchanged. Pearson correlation is
+invariant to positive affine rescaling, so memory and lag 1 autocorrelation are
+also unchanged.
+
+The KS distance compares $F_{a\tau}(x)=F_\tau(x/a)$ with the reference
+distribution and is generally changed by $a$. The same argument applies to
+actor specific KS distances. For the log transformed Wasserstein distance,
+\[
+\log(a\tau)=\log\tau+\log a.
+\]
+Translation of one distribution by $c$ changes the Wasserstein distance by at
+most $|c|$. Applying this with $c=\log a$ gives
+\[
+\left|
+W_1(\log a\tau,\log\tau')
+-
+W_1(\log\tau,\log\tau')
+\right|
+\leq |\log a|.
+\]
+If the two unscaled log-IET distributions differ by a location shift $c$, then
+$W_1 = |c|$ before rescaling and $|c + \log a|$ after, so the change equals
+$\bigl||c + \log a| - |c|\bigr|$, which attains $|\log a|$ if and only if
+$c\,(c + \log a) \ge 0$ (for example $c = 1$, $\log a = -3$ gives a change of
+$1$, not $3$); in particular equality holds when $c = 0$, that is, when the
+two unscaled distributions coincide.
+
+\subsection{Finite sample calibration}
+
+\paragraph{Proof of Proposition~\ref{prop:calibration}}
+Under exchangeability, the rank of $D^{SR}$ among the $N+1$ values consisting
+of $D^{SR}$ and $D^{RR}_{1:N}$ is uniform. Ties are resolved against the
+simulator through the greater-than-or-equal comparison in the definition of
+$q_{\mathrm{RR}}$, so $q_{\mathrm{RR}}$ is at least the upper tail rank divided
+by $N+1$ and the bound holds with equality in the absence of ties:
+\[
+\Pr(q_{\mathrm{RR}}\leq\alpha)
+\leq
+\frac{\lfloor \alpha(N+1)\rfloor}{N+1}
+\leq \alpha.
+\]
+The smallest attainable value is $1/(N+1)$, which occurs exactly when the
+simulator to real discrepancy exceeds every real to real discrepancy.
+
+\subsection{Teacher-forced evaluation}
+\label{rem:openloop}
+
+\paragraph{Remark 1.}
+When observed history is supplied during generation, state and marginal timing
+errors cannot accumulate in the same way as in a closed loop rollout. Such
+evaluation can therefore understate errors that arise through feedback over
+longer horizons. The Order statistics remain informative because the ordering
+of intervals generated within an evaluated continuation is still produced by
+the model. R2O itself is independent of the rollout procedure and can be
+applied to either setting.
+
+\subsection{Synthetic validation}
+
+We construct a synthetic stream with 300 actors, lognormal IET marginals, and
+Gaussian-copula AR(1) dependence chosen to produce memory $M=0.164$ and
+burstiness $B=0.464$. We then apply transformations that isolate the
+properties used by R2O. The shuffle preserves every marginal timing statistic
+while removing memory. An independent renewal process with the same IET
+marginal behaves similarly. A uniform rate change moves the Rate-sensitive
+distributional statistics while leaving burstiness and memory unchanged.
+
+\input{tab_synthetic}
+
+\subsection{Control identifiability}
+
+\paragraph{Proposition 5 (Control identifiability).}
+Let $Q$ denote a deterministic or randomized measurement transformation
+applied by the generation pipeline, such as timestamp quantization or
+duplicate handling. If a generated process $G_\theta$ has the same
+distribution as the real process $E_{\mathrm{real}}$, then $Q(G_\theta)$ and
+$Q(E_{\mathrm{real}})$ also have the same distribution. A discrepancy that
+remains after applying the same transformation to both streams cannot be
+attributed to $Q$ alone. The same logic applies to count conditioning when
+generated and real actor event counts are matched before scoring.
+
+\paragraph{Proof.}
+Equality in distribution is preserved under any measurable transformation.
+Applying the same transformation to both processes therefore preserves
+equality. The stated interpretation follows from the contrapositive.
+
+
+\section{R2O calibration and robustness checks}
+\label{app:instrument}
+\label{app:robustness}
+
+\subsection{Matched real-window reference}
+
+For each dataset, the real reference distribution is constructed from pairs of
+10,000-edge windows. Candidate pairs are matched on window duration, actor
+count, edges per actor, and median positive IET. We use disjoint windows where
+possible and cap reuse at three pairs for any window. Up to 60 matched pairs
+are selected per dataset. When the available stream provides fewer disjoint
+matches, the empirical reference has correspondingly coarser resolution.
+
+For each R2O discrepancy $D$, the main analysis records both
+\[
+Z_D=
+\frac{D^{SR}-\mu_D^{RR}}{\sigma_D^{RR}}
+\]
+and the empirical tail position $q_{\mathrm{RR}}$ defined in the main paper.
+The standardized score displays the size and direction of a discrepancy in
+units of real variation. The empirical tail position is the primary rank-based
+description. Because matched pairs can share windows, $q_{\mathrm{RR}}$ is
+interpreted descriptively in the empirical analysis. Proposition 4 gives its
+idealized finite sample interpretation under exchangeability.
+
+\input{tab_rrband}
+
+\subsection{Timestamp ties}
+
+Round-based generation assigns the same timestamp to multiple events and can
+therefore produce zero IETs. We retain the original stream and evaluate two
+additional representations. Moment statistics such as memory use a
+deduplicated representation in which repeated actor-and-timestamp events are
+removed. Distributional statistics use a jittered representation in which ties
+are spread within the corresponding generation interval while preserving the
+order of distinct timestamps.
+
+Across the primary Qwen3-30B-A3B configurations, removing duplicate
+timestamps explains a median 41\% of the absolute burstiness discrepancy. A
+residual with the same sign remains in all 12 configurations. On two
+\texttt{dianping} configurations with small original burstiness discrepancies,
+deduplication increases the discrepancy, indicating that the effect of ties is
+not uniformly directional.
+
+\subsection{Scheduler control}
+
+The scheduler control applies the same round quantization used by the
+generation pipeline to the real stream before computing Order. This produces a
+real reference subject to the same timestamp resolution as the generated
+stream. Quantization changes real memory from a 39\% increase to a 49\%
+reduction, but the resulting real memory remains above the generated
+Qwen3-30B-A3B range on all four datasets.
+
+\input{tab_sched}
+
+\subsection{Actor-count conditioning}
+
+Differences in actor activity may alter marginal IET comparisons even when the
+timing distribution conditional on activity is similar. We therefore recompute
+actor level KS after matching generated and real event counts for each actor.
+The procedure uses 20 subsampling replicates. The median ratio between
+count conditioned and original KS is 1.006, with values ranging from 0.886 to
+1.039 across the primary configurations. The marginal discrepancy therefore
+remains after event counts are matched.
+
+\subsection{Evaluation-window sensitivity}
+
+The inherited evaluation uses the first 10,000 edges of each dataset. For
+\texttt{wikirevision}, this window is unusually early relative to the other
+candidate windows. We therefore repeat the GPT-4o-Mini L0 and L1 comparison on
+a representative window selected using the same matching covariates as the real
+reference construction. Marginal KS decreases substantially and degree MMD
+also improves, but the Order discrepancy remains. Real memory on the
+representative window is 0.15, while the generated values are 0.02 and -0.06
+for L0 and L1 respectively.
+
+\input{tab_erep}
+
+On this representative window, the marginal jitter-arm KS is 0.090 versus
+0.310 on the inherited cold-start window, a roughly 3.4$\times$
+window-specific component of marginal error. Structure is also better, while
+the dependence deficit persists. Thus the inherited first-10k-edge convention
+simultaneously understates structural fidelity and overstates marginal timing
+error.
+
+A particularly transparent Rate example appears on this same representative
+window: the tool loop worsens the log-duration ratio from 3.83 to 4.44
+(approximately $46\times$ to $85\times$ in duration) while structure improves.
+This illustrates directly that Rate and structural fidelity can move in
+opposite directions.
+
+\subsection{Summary of robustness checks}
+
+The controls address distinct alternative explanations. Timestamp handling
+changes the magnitude of some Rhythm statistics but does not restore Order.
+Applying the generation scheduler to real data does not account for the
+missing memory. Matching actor event counts leaves the marginal discrepancy
+nearly unchanged. Selecting a more representative window reduces marginal
+error but leaves the dependence discrepancy. These results support the main
+conclusion that the R2O findings are not explained by the measurement artifacts
+tested here.
+
+
+\section{Complete experimental results}
+\label{app:tables}
+\label{app:complete-results}
+
+This appendix reports the complete configuration level results underlying the
+main experiments. Table~\ref{tab:complete-configs} contains the primary and
+exploratory configurations. Table~\ref{tab:matched-horizon} gives the
+matched horizon analysis for the exploratory Qwen3-8B runs.
+Table~\ref{tab:timing-baselines} reports the timing baselines, and
+Table~\ref{tab:artifact-controls} reports configuration level quantities used
+in the robustness analysis. Two KS statistics appear in these tables and are
+not interchangeable: Table~\ref{tab:complete-configs} reports the pooled
+actor level inter-event KS against matched reference slots (the R2O Rhythm
+statistic), whereas Table~\ref{tab:timing-baselines} reports a global stream
+inter-event KS, because the timing baselines generate a single global stream
+without actor assignment. For the same run these two values differ (for
+example \texttt{dianping} L0: 0.372 versus 0.823). Table~\ref{tab:artifact-controls}
+additionally reports the rate normalized Rhythm statistic of
+Proposition~\ref{prop:separation}: per actor inter-event times are divided by
+the actor's mean interval before pooling (shape KS), which removes the Rate
+component. Shape KS ranges from 0.22 to 0.66 across the 16 preregistered
+configurations and exceeds the matched slot KS on 11 of them; on the five
+where it is lower (all four \texttt{dianping} configurations and
+\texttt{wikirevision} GPT-4o-Mini L0) it remains at or above 0.22, so the
+Rhythm discrepancy is not an artifact of the Rate mismatch.
+
+\input{tab_main}
+
+\input{tab_matched_horizon}
+
+\input{tab_baselines}
+
+\input{tab_controls}
+
+
+\section{Cross system scope and GRAPHIA}
+\label{app:graphia}
+
+GRAPHIA generates activity in fixed one-day bins. An activity predictor
+determines counts, while the language-model component determines destinations
+and text; no continuous per event timestamp exists in its generation path.
+Continuous-time process fidelity is therefore structurally outside its output
+space. Strong performance under current DyTAG evaluation consequently does not
+require a continuous time process claim. For the same reason, GRAPHIA cannot
+provide an independent-codebase replication of the residual event level timing
+deficit studied here.
+
+
+\section{Preregistered confirmatory tests: roll forward and timing locus}
+\label{app:followups}
+
+The experiments reported in this paper establish that the evaluated simulators
+do not reproduce the real temporal process and that this failure is separable
+from structural fidelity. Two confirmatory tests follow from that finding. The
+\emph{future blind roll forward test} asks whether the temporal deficit grows
+when the simulator is rolled forward on its own generated history instead of
+being re-anchored to real history at every round. The \emph{timing locus test}
+asks which component of the agent stack is responsible for the deficit, by
+comparing where in the stack event timing is decided. Both protocols are frozen
+and git timestamped. They are protocol only; no results from either test are
+reported in this paper.
+
+\subsection{Future blind roll forward test}
+
+The roll forward test compares paired arms from shared warm-starts. The future blind closed loop
+arm generates
+\[
+\widehat{G}_{t+1}
+\sim
+P_\theta\!\left(
+\cdot \mid
+G_{\le t_c},
+\widehat{G}_{t_c+1:t}
+\right),
+\]
+where the real continuation after the cutoff is used only for scoring. The
+closed arm's actor schedule is recency-weighted sampling from its own generated
+history and is count-matched by construction.
+
+The teacher forced open loop arm generates
+\[
+\widehat{G}_{t+1}
+\sim
+P_\theta\!\left(\cdot\mid G_{\le t}\right),
+\]
+with real post-cutoff history re-injected each step. It is deliberately not
+future blind.
+
+Define
+\[
+\Delta(h)
+=
+S_{\mathrm{temporal}}^{\mathrm{closed}}(h)
+-
+S_{\mathrm{temporal}}^{\mathrm{open}}(h).
+\]
+The primary estimand is
+\[
+\mathrm{AUC}_{\Delta},
+\]
+the area under the closed-minus-open temporal-composite gap as a function of
+horizon. The uncertainty interval is a paired seed level 95\% bootstrap
+interval. A confidence interval containing zero is the preregistered falsifier
+for the feedback explanation: it indicates temporal-process failure rather
+than a failure caused by roll forward feedback.
+
+Horizon checkpoints are equally spaced in event count, the protocol's native
+clock. A growth-shape parameter is secondary. Seed noise was measured from 24
+replicate sets. Paired designs with shared warm-starts are mandatory and
+require approximately 4 to 5$\times$ fewer runs at $\rho=0.8$ than an unpaired
+design. Full-protocol variance is measured using at least three seeds and at
+least two arms before any full tier sample size is fixed.
+
+\subsection{Preregistered temporal composites}
+
+Four composites are preregistered:
+\[
+S_{\mathrm{micro}},\qquad
+S_{\mathrm{temporal}},\qquad
+S_{\mathrm{macro}},\qquad
+S_{\mathrm{individual}}.
+\]
+Each is a mean of direction normalized $Z$ scores against the matched
+real to real band, with larger values indicating worse mismatch.
+
+The temporal composite contains the marginal members
+$W_1(\log \mathrm{IET})$ and the absolute burstiness gap, together with a
+separate preregistered temporal subblock consisting of $\Delta M$ and
+node-rhythm divergence. The preregistration originally called the latter pair
+the ``dependence'' block. Under the definitions used in this paper, however,
+only $\Delta M$ is order-sensitive; node-rhythm divergence is a
+marginal timing statistic. We therefore retain the preregistered membership
+while referring to the pair as the preregistered temporal subblock.
+Composites are never reported without their component panel.
+
+The archived exploratory results use KS as the headline marginal statistic
+because the archived scores predate the log-$W_1$ convention. KS remains a
+preregistered diagnostic, and confirmatory runs compute both KS and log-$W_1$.
+
+The confirmatory real to real band uses a block bootstrap preserving actor
+identity, with at least 30 covariate-matched pairs where disjoint windows
+suffice. \texttt{weibo\_tech} has only 13 disjoint pairs, so its $q_{\mathrm{RR}}$
+floor is $1/14 = 0.071$ and every cell sits at that floor; the conclusion on
+that dataset rests on the standardized $Z$ scores ($Z_{\mathrm{KS}} \ge +5.3$,
+$Z_{|\Delta M|} \ge +2.5$) and on the block bootstrap band. Bootstrap replicates
+estimate band uncertainty only; they do not add pseudo-observations to the
+$q_{\mathrm{RR}}$ denominator.
+
+\subsection{Timing locus test}
+
+The timing locus test compares a predeclared menu of timing loci:
+\begin{enumerate}
+    \item intensity determined from history;
+    \item intensity determined from state and history;
+    \item direct LM emission of $\Delta t$; and
+    \item a small and large handoff in which the expensive component retains
+    semantic decisions about whom and what, while a lightweight temporal model
+    determines when.
+\end{enumerate}
+
+The small and large factorization is not itself claimed as novel. ``Handoff wins''
+is preregistered as an acceptable outcome, including the case in which direct
+LM emission of $\Delta t$ loses. Non-inferiority guardrails apply to
+$S_{\mathrm{macro}}$ and edge text similarity. The baseline set also includes
+a trained neural temporal generator, actor level variants, and cost
+normalization.
+
+\subsection{E-REP stage 2}
+
+The confirmatory replication of the window sensitivity result with the local
+backbone is judged on a preregistered falsifier. The falsifier fires only if
+both the structural/temporal decoupling and the residual timing gap vanish on
+the representative window.
+
+
+\section{Deviation log}
+\label{app:deviations}
+
+The preregistration carries a git timestamped deviation log. Every entry was
+committed before the data it governs existed.
+
+Entries 1 to 5 concern wording, band construction (including the requirement for
+a block bootstrap where disjoint real-window pairs are insufficient),
+$Z$-scoring of $W_1$ on log IETs, the two-stage E-REP split, and an E-REP
+second dataset rule.
+
+Entries 6 to 8 fix the roll forward test's primary estimand
+($\mathrm{AUC}_{\Delta}$ with uniform weights, directional H1, and paired
+seed level bootstrap) and make the count versus timing decomposition primary.
+These entries postdate the exploratory results reported in this paper but
+precede any roll forward data.
+
+Entry 7 makes $q_{\mathrm{RR}}$ the primary real reference report, with
+$Z$ retained for visualization. Applied retroactively to the exploratory
+results as a robustness view, this choice cannot change any conclusion because
+all 16 preregistered cells are outside the real reference band on
+inter-event KS under both conventions.
+
+Entry 9 fixes the closed arm actor schedule as recency-weighted sampling from
+its own generated history, count-matched by construction.
+
+Entry 10 was added after the main results and records the eight exploratory
+Qwen3-8B cells (L0/L1 on all four datasets). They were generated under the same
+seed prefix, evaluation window, decoding temperature, and scoring pipeline.
+They are API served with provider reasoning disabled. Retrieval embeddings are
+computed on CPU and are numerically equivalent. All four L0 lanes completed the
+full horizon; each L1 lane was stopped at a round boundary
+(4,900 to 5,696 events) when round latency made the full horizon uneconomical.
+They are labeled exploratory everywhere and are excluded from every
+``16-cell'' and ``12-cell'' statement.
+
+The full log, including dates, rationales, and affected claims, is included in
+the supplementary material.
+
+
+\section{Extended limitations and scope}
+\label{app:limitations}
+
+All reported results are scored under the lineage's teacher forced protocol.
+Because real history is re-injected during generation, state and per-actor
+marginal errors cannot compound in the same way as under a future blind closed
+loop rollout. The reported Order results should therefore be read as optimistic
+with respect to process error. This argument is specific to Order:
+under closed loop rollout agents condition on their own generated histories,
+which may be more regular than real histories, so Rate and Rhythm could improve
+on some axes while Order worsens. Whether closed loop feedback produces such
+trade offs is exactly what the preregistered roll forward test
+(Appendix~\ref{app:followups}) measures; it has not yet been run.
+
+The Order axis uses lag 1 statistics ($M$ and $\rho_1$). Two streams could
+agree on these while differing in higher order, longer range, or nonlinear
+dependence. Lag $k$ autocorrelation, mutual information between successive
+intervals, or a conditional intensity fit can be added as further Order
+statistics and calibrated against the same real to real reference without
+changing the framework.
+
+The empirical claims are scoped to one lineage, one generation harness, four
+datasets, and 16 preregistered cells. The backbone comparison covers the three
+tested backbones, which span two model families. The Qwen3-8B arm is exploratory, single-run, and its L0/L1
+contrasts are also rescored at matched horizon.
+
+Agent configurations are single archived runs rather than replicated
+generation seeds. Five cells are shorter than the nominal horizon (Table~\ref{tab:artifact-controls}). API served
+backbones carry provider side serving opacity. The matched real to real
+calibration quantifies discrepancy relative to natural real-stream variability
+but does not estimate generation seed uncertainty. The empirical
+$q_{\mathrm{RR}}$ value is a tail position determined by the available
+real-window reference set and should not be interpreted as a hypothesis test
+$p$-value in the empirical analysis.
+
+Cross-system generalization is additionally constrained by output-space
+differences. In particular, GRAPHIA does not expose continuous per event time,
+so it cannot serve as an independent event level replication of the
+continuous time residual studied here. Appendix~\ref{app:graphia} gives the
+full scope argument.
+
+The preregistration and its deviations are described in
+Appendix~\ref{app:deviations}.
+
+
+\section{Broader impact}
+\label{app:broader-impact}
+
+This work concerns evaluation methodology. Its intended effect is protective:
+agent-based graph simulators are beginning to be used for forecasting,
+what if analysis, and synthetic data generation, while the results here show
+that commonly used validation can miss properties on which those uses depend.
+Wider adoption of process level evaluation should reduce overtrust in simulator
+outputs.
+
+A possible negative effect is the converse: better temporal-fidelity
+evaluation could eventually help build simulators of human activity that are
+harder to distinguish from real traces. The roll forward protocol itself is a
+detection style instrument and is dual use in the same limited sense as other
+fidelity metrics.

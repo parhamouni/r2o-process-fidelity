@@ -1,0 +1,18 @@
+\begin{table}[h]
+\caption{Evaluation-window sensitivity on \texttt{wikirevision} using GPT-4o-Mini. The representative and inherited initial windows use the same generation and scoring procedures. Inter-event KS here is the jitter arm statistic (timestamp ties spread within the round quantum) and therefore differs from the as scored KS of Table~\ref{tab:complete-configs} for the same runs.}
+\label{tab:window-sensitivity}
+\centering\small
+\begin{tabular}{lrrrr}
+\toprule
+ & \multicolumn{2}{c}{Representative window} & \multicolumn{2}{c}{Cold-start window} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Metric & L0 & L1 & L0 & L1 \\
+\midrule
+Inter-event KS (jitter) & 0.090 & 0.088 & 0.310 & 0.383 \\
+$\log(T_g/T_r)$ & 3.83 & 4.44 & 3.98 & 3.62 \\
+Degree MMD (final) & 0.078 & 0.061 & 0.151 & 0.121 \\
+$M$ (dedup) & $+0.02$ & $-0.06$ & $+0.43$ & $-0.03$ \\
+Zero IET fraction & 0.37 & 0.30 & 0.64 & 0.51 \\
+\bottomrule
+\end{tabular}
+\end{table}

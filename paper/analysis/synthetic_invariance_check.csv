@@ -1,0 +1,6 @@
+transform,real_M,real_B,IET_KS,logW1,|dB|,M_gen,|dM|
+faithful replicate,0.164,0.464,0.004,0.009,0.042,0.169,0.005
+intra-actor shuffle,0.164,0.464,0.0,0.0,0.0,-0.007,0.172
+"renewal, same marginal",0.164,0.464,0.006,0.015,0.039,-0.009,0.173
+rate x20,0.164,0.464,0.686,2.996,0.0,0.164,0.0
+rate x20 + shuffle,0.164,0.464,0.686,2.996,0.0,-0.022,0.186

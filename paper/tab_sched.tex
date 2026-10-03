@@ -1,0 +1,15 @@
+\begin{table}[h]
+\caption{Scheduler control for the memory coefficient. Real streams are passed through the same round quantization used by the generation pipeline before memory is recomputed. $M^{\mathrm{real}}$ is computed on the full real reference window; Table~\ref{tab:complete-configs} reports real $M$ on each cell's matched reference slots and Table~\ref{tab:matched-horizon} at the matched horizon, so the real reference differs slightly across tables.}
+\label{tab:scheduler-control}
+\centering\small
+\begin{tabular}{lrrrr}
+\toprule
+Dataset & $M^{\mathrm{real}}$ & $M^{\mathrm{real}}_{\mathrm{quant}}$ & Reduction & Generated $M$ (min..max) \\
+\midrule
+dianping & 0.102 & 0.052 & $+49$\% & $-0.276$\,..\,$-0.015$ \\
+wikirevision & 0.184 & 0.144 & $+22$\% & $-0.011$\,..\,$+0.030$ \\
+weibo\_daily & 0.159 & 0.221 & $-39$\% & $-0.032$\,..\,$-0.027$ \\
+weibo\_tech & 0.238 & 0.244 & $-3$\% & $-0.014$\,..\,$-0.009$ \\
+\bottomrule
+\end{tabular}
+\end{table}

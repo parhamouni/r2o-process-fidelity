@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+slurm_logs/
+paper/*.aux
+paper/*.log
+paper/*.bbl
+paper/*.blg
+paper/*.out
+paper/main.pdf
+.DS_Store

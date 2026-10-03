@@ -1,0 +1,482 @@
+{
+ "M_ref_min": 0.1017906021987651,
+ "M_ref_max": 0.2726293912237483,
+ "M_ref_by_ds": {
+  "dianping": 0.1017906021987651,
+  "weibo_daily": 0.1570779034931433,
+  "weibo_tech": 0.2249964800924455,
+  "wikirevision": 0.2034945007468732
+ },
+ "M_gen_qwen_min": -0.2757314354655898,
+ "M_gen_qwen_max": 0.0295957583634195,
+ "M_gen_all_min": -0.2757314354655898,
+ "M_gen_all_max": 0.429839174803291,
+ "M_gen_api": {
+  "dianping_l0_gpt4omini_api": -0.0983491115271703,
+  "wikirevision_l0_gpt4omini_api": 0.429839174803291,
+  "wikirevision_l1_gpt4omini_api": -0.0276286229685066,
+  "weibo_tech_l0_gpt4omini_api": -0.0399430381539129
+ },
+ "M_ladder_qwen": {
+  "dianping": {
+   "L0": -0.0146012812821789,
+   "L1": -0.2603921597983414,
+   "L2": -0.2757314354655898
+  },
+  "weibo_daily": {
+   "L0": -0.0272394010980144,
+   "L1": -0.0312607781344579,
+   "L2": -0.0318829853426105
+  },
+  "weibo_tech": {
+   "L0": -0.0087636833138617,
+   "L1": -0.0142208493724588,
+   "L2": -0.0125937937715877
+  },
+  "wikirevision": {
+   "L0": 0.0295957583634195,
+   "L1": 0.0006363174854202,
+   "L2": -0.0107058720032364
+  }
+ },
+ "ladder_L2_below_L0_count": 4,
+ "ladder_L1_below_L0_count": 4,
+ "rho1_ref_max": 0.3584529128361486,
+ "rhythm_gen_min": 0.3288288288288288,
+ "rhythm_gen_max": 0.6666666666666666,
+ "sched_null": {
+  "dianping": {
+   "M_real": 0.101601,
+   "M_quantized_real": 0.051839,
+   "M_gen_min": -0.275731,
+   "M_gen_max": -0.014601,
+   "attenuation_frac": 0.489774
+  },
+  "wikirevision": {
+   "M_real": 0.183882,
+   "M_quantized_real": 0.143819,
+   "M_gen_min": -0.010706,
+   "M_gen_max": 0.029596,
+   "attenuation_frac": 0.217871
+  },
+  "weibo_daily": {
+   "M_real": 0.15868,
+   "M_quantized_real": 0.220874,
+   "M_gen_min": -0.031883,
+   "M_gen_max": -0.027239,
+   "attenuation_frac": -0.391945
+  },
+  "weibo_tech": {
+   "M_real": 0.237901,
+   "M_quantized_real": 0.244495,
+   "M_gen_min": -0.014221,
+   "M_gen_max": -0.008764,
+   "attenuation_frac": -0.027715
+  }
+ },
+ "atten_max": 0.4897736149777879,
+ "Mq_min": 0.0518393426777938,
+ "Mq_max": 0.2444946711641583,
+ "gen_below_qfloor_count": 4,
+ "atten_by_ds": {
+  "dianping": 0.4897736149777879,
+  "wikirevision": 0.2178712025064414,
+  "weibo_daily": -0.3919448616908132,
+  "weibo_tech": -0.0277149020581045
+ },
+ "countcond_ratio_median": 1.000479182253487,
+ "countcond_ratio_min": 0.8857517089848284,
+ "countcond_ratio_max": 1.0942097870436591,
+ "logdur_min": -0.1121214763995058,
+ "logdur_max": 9.668498315039567,
+ "n_cells": 16,
+ "Zks_min": 5.301693615363893,
+ "Zks_max": 22.485362317358344,
+ "Zks_outside2": 16,
+ "ZM_outside2": 16,
+ "Zburst_outside2": 13,
+ "Zburst_inband_cells": [
+  "dianping_react_v2",
+  "dianping_memory_v1",
+  "dianping_l0_gpt4omini_api"
+ ],
+ "Zrhythm_outside2": 9,
+ "rr_mu_ks_min": 0.0361174561286194,
+ "rr_mu_ks_max": 0.0747609056415919,
+ "rr_mu_rhythm_min": 0.2907306066303264,
+ "rr_mu_rhythm_max": 0.4057398787922652,
+ "rr_n_pairs": {
+  "dianping": 60,
+  "wikirevision": 60,
+  "weibo_daily": 52,
+  "weibo_tech": 13
+ },
+ "q_ks_all": {
+  "dianping_re_qwen3": 0.0163934426229508,
+  "dianping_react_v2": 0.0163934426229508,
+  "dianping_memory_v1": 0.0163934426229508,
+  "dianping_l0_gpt4omini_api": 0.0163934426229508,
+  "wikirevision_re_qwen3": 0.0163934426229508,
+  "wikirevision_react_v2": 0.0163934426229508,
+  "wikirevision_memory_v1": 0.0163934426229508,
+  "wikirevision_l0_gpt4omini_api": 0.0163934426229508,
+  "wikirevision_l1_gpt4omini_api": 0.0163934426229508,
+  "weibo_daily_re_qwen3": 0.0188679245283018,
+  "weibo_daily_react_v2": 0.0188679245283018,
+  "weibo_daily_memory_v1": 0.0188679245283018,
+  "weibo_tech_re_qwen3": 0.0714285714285714,
+  "weibo_tech_react_v2": 0.0714285714285714,
+  "weibo_tech_memory_v1": 0.0714285714285714,
+  "weibo_tech_l0_gpt4omini_api": 0.0714285714285714
+ },
+ "q_ks_max": 0.0714285714285714,
+ "q_ks_floor_60": 0.01639344262295082,
+ "q_ks_floor_13": 0.07142857142857142,
+ "q_ks_all_at_floor": true,
+ "q_rhythm_dianping_min": 0.1428571428571428,
+ "q_rhythm_dianping_max": 0.2142857142857142,
+ "boot_ks": {
+  "dianping": 0.0719079897766418,
+  "weibo_daily": 0.0651516835203911,
+  "weibo_tech": 0.1224358262029114,
+  "wikirevision": 0.3944493832648071
+ },
+ "boot_ks_min": 0.0651516835203911,
+ "boot_ks_max": 0.3944493832648071,
+ "boot_beats_all_agents": {
+  "dianping": true,
+  "weibo_daily": true,
+  "weibo_tech": true,
+  "wikirevision": false
+ },
+ "boot_beats_count": 3,
+ "best_agent_ks": {
+  "dianping": 0.5589,
+  "weibo_daily": 0.5318,
+  "weibo_tech": 0.4677,
+  "wikirevision": 0.3355
+ },
+ "best_agent_ks_min_where_beaten": 0.4677,
+ "best_agent_ks_max_where_beaten": 0.5589,
+ "hawkes_burst_gap_dianping": -0.004374687740764,
+ "agent_burst_gap_dianping_min": 0.453,
+ "hawkes_beats_agents_burst_dianping": true,
+ "erep_ks_jit_L0": 0.0899408284023668,
+ "erep_ks_jit_L1": 0.0882194848833985,
+ "erep_M_ref": 0.1499987207527763,
+ "erep_M_gen_L0": 0.0171244595644967,
+ "erep_M_gen_L1": -0.0614719231860616,
+ "erep_Zks_jit_L0": 2.8836953517990707,
+ "erep_Zks_jit_L1": 2.791470912957668,
+ "erep_Zks_asgen_min": 14.2624546027748,
+ "erep_Zks_asgen_max": 17.839289697029105,
+ "erep_zero_iet_L0": 0.3695266272189349,
+ "erep_zero_iet_L1": 0.3027658630380121,
+ "degree_mmd": {
+  "dianping": {
+   "L0": 0.052,
+   "L1": 0.026,
+   "L2": 0.034,
+   "L0-api": 0.056
+  },
+  "wikirevision": {
+   "L0": 0.159,
+   "L1": 0.139,
+   "L2": 0.115,
+   "L0-api": 0.151,
+   "L1-api": 0.121
+  },
+  "weibo_daily": {
+   "L0": 0.273,
+   "L1": 0.112,
+   "L2": null
+  },
+  "weibo_tech": {
+   "L0": 0.209,
+   "L1": 0.097,
+   "L2": 0.214,
+   "L0-api": null
+  }
+ },
+ "mmd_L0L1_pct": [
+  -50.0,
+  -12.578616352201252,
+  -58.974358974358985,
+  -53.588516746411486
+ ],
+ "mmd_L0L1_mean_pct": -43.785373018242936,
+ "mmd_L0L1_improved_count": 4,
+ "mmd_L0L2_mean_pct": -19.96533203087324,
+ "mmd_L0L2_n": 3,
+ "mmd_L0L2_improved_count": 2,
+ "ks_L0L1_mean_pct": -4.82646710660021,
+ "ks_L0L1_pct": [
+  18.53494353305056,
+  -37.97346748229232,
+  11.252012186237558,
+  -11.119356663396633
+ ],
+ "ks_L0L2_mean_pct": -9.181555856993695,
+ "ks_L0L1_sign_mixed": true,
+ "ks_L0L2_sign_mixed": true,
+ "erep_mmd_L0": 0.078,
+ "erep_mmd_L1": 0.061,
+ "zero_iet_min": 0.15756630265210608,
+ "zero_iet_max": 0.6704623878536922,
+ "tie_share_median": 0.4052903985149466,
+ "tie_share_min": -4.202326785545306,
+ "tie_share_max": 0.5784649633031291,
+ "residual_same_sign_count": 12,
+ "n_qwen_cells": 12,
+ "flip_cells": [],
+ "best_struct_med_iet_ratio": {
+  "dianping": {
+   "level": "L1",
+   "ratio": 88.12155465037338
+  },
+  "wikirevision": {
+   "level": "L2",
+   "ratio": 0.042740116348094506
+  },
+  "weibo_daily": {
+   "level": "L1",
+   "ratio": 62.06896551724138
+  },
+  "weibo_tech": {
+   "level": "L1",
+   "ratio": 22.651515151515152
+  }
+ },
+ "best_struct_ratio_median": 42.36024033437827,
+ "best_struct_ratio_max": 88.12155465037338,
+ "best_struct_offby_gt2_count": 4,
+ "best_struct_Zks": {
+  "dianping": {
+   "level": "L1",
+   "Z_ks": 16.879625378814005
+  },
+  "wikirevision": {
+   "level": "L2",
+   "Z_ks": 12.571155697393108
+  },
+  "weibo_daily": {
+   "level": "L1",
+   "Z_ks": 6.921271444250581
+  },
+  "weibo_tech": {
+   "level": "L1",
+   "Z_ks": 5.301693615363893
+  }
+ },
+ "best_struct_Zks_min": 5.301693615363893,
+ "best_struct_Zks_max": 16.879625378814005,
+ "backbone_ks_pct": {
+  "dianping_L0": -8.540049619307199,
+  "wikirevision_L0": -27.943927288802307,
+  "wikirevision_L1": -19.410717229609308,
+  "weibo_tech_L0": 25.846605010714853
+ },
+ "backbone_mmd_pct": {
+  "dianping_L0-api": 7.692307692307709,
+  "wikirevision_L0-api": -5.031446540880502,
+  "wikirevision_L1-api": -12.949640287769792
+ },
+ "slm": {
+  "dianping:L0": {
+   "n": 9000,
+   "run": "offline-run-20260901_102437-e7oz9rsf",
+   "dataset": "dianping",
+   "ks": 0.444172074467056,
+   "Z_ks": 17.03760870531573,
+   "M_as_gen": -0.07577497568335792,
+   "M_dedup": -0.10489994236686614,
+   "M_ref": 0.10179060219876512,
+   "abs_M_gap": 0.17756557788212304,
+   "Z_M": 5.788872807043749,
+   "q_ks": 0.01639344262295082,
+   "zero_iet": 0.30672579453067256,
+   "rhythm_jit": 0.5577777777777778,
+   "logdur": 5.226705778057519,
+   "degree_mmd": 0.059
+  },
+  "dianping:L1": {
+   "n": 5650,
+   "run": "offline-run-20260901_102841-esroswp5",
+   "dataset": "dianping",
+   "ks": 0.5782513587660959,
+   "Z_ks": 22.730666822806675,
+   "M_as_gen": -0.04237464084634849,
+   "M_dedup": -0.06004524112497647,
+   "M_ref": 0.10795563413977172,
+   "abs_M_gap": 0.1503302749861202,
+   "Z_M": 4.742672394169344,
+   "q_ks": 0.01639344262295082,
+   "zero_iet": 0.21423248882265275,
+   "rhythm_jit": 0.6125,
+   "logdur": 5.667524404194667,
+   "degree_mmd": 0.045
+  },
+  "wikirevision:L0": {
+   "n": 9000,
+   "run": "offline-run-20260831_161404-xlj8ob77",
+   "dataset": "wikirevision",
+   "ks": 0.579666858127513,
+   "Z_ks": 29.121751718665422,
+   "M_as_gen": 0.17998269676710085,
+   "M_dedup": 0.16241570159176932,
+   "M_ref": 0.20349450074687328,
+   "abs_M_gap": 0.023511803979772428,
+   "Z_M": 0.006468211571438982,
+   "q_ks": 0.01639344262295082,
+   "zero_iet": 0.8686961516369902,
+   "rhythm_jit": 0.6666666666666666,
+   "logdur": 4.886023470375461,
+   "degree_mmd": 0.131
+  },
+  "wikirevision:L1": {
+   "n": 5696,
+   "run": "offline-run-20260831_161528-nsyz9nw8",
+   "dataset": "wikirevision",
+   "ks": 0.25664107926433793,
+   "Z_ks": 11.814996350730986,
+   "M_as_gen": 0.02396896757669036,
+   "M_dedup": 0.0083609788815108,
+   "M_ref": 0.2458993572392213,
+   "abs_M_gap": 0.22193038966253092,
+   "Z_M": 13.145523055779035,
+   "q_ks": 0.01639344262295082,
+   "zero_iet": 0.7399777282850779,
+   "rhythm_jit": 0.34615384615384615,
+   "logdur": 4.152831568420066,
+   "degree_mmd": 0.077
+  },
+  "weibo_daily:L0": {
+   "n": 9000,
+   "run": "offline-run-20260901_102529-6sn3ijje",
+   "dataset": "weibo_daily",
+   "ks": 0.29859315329718,
+   "Z_ks": 5.865908506805428,
+   "M_as_gen": 0.016227514078580845,
+   "M_dedup": 0.0019750456601810326,
+   "M_ref": 0.15707790349314338,
+   "abs_M_gap": 0.14085038941456254,
+   "Z_M": 3.713052892650032,
+   "q_ks": 0.018867924528301886,
+   "zero_iet": 0.2912029676735559,
+   "rhythm_jit": 0.5201569264069263,
+   "logdur": 6.521353905589519,
+   "degree_mmd": 0.239
+  },
+  "weibo_daily:L1": {
+   "n": 5350,
+   "run": "offline-run-20260901_102958-rme99r27",
+   "dataset": "weibo_daily",
+   "ks": 0.296075733517207,
+   "Z_ks": 5.8004454382056085,
+   "M_as_gen": -0.02890307587706671,
+   "M_dedup": -0.04341168203404994,
+   "M_ref": 0.1255356525421367,
+   "abs_M_gap": 0.15443872841920342,
+   "Z_M": 4.189727031773996,
+   "q_ks": 0.018867924528301886,
+   "zero_iet": 0.3428495902722707,
+   "rhythm_jit": 0.5384615384615384,
+   "logdur": 7.07602668746246,
+   "degree_mmd": 0.137
+  },
+  "weibo_tech:L0": {
+   "n": 9000,
+   "run": "offline-run-20260901_102658-ipf8cwd3",
+   "dataset": "weibo_tech",
+   "ks": 0.27333534399600606,
+   "Z_ks": 5.553491620475286,
+   "M_as_gen": 0.016640492616861166,
+   "M_dedup": 0.006408079972151871,
+   "M_ref": 0.22499648009244555,
+   "abs_M_gap": 0.20835598747558437,
+   "Z_M": 3.292047635915774,
+   "q_ks": 0.07142857142857142,
+   "zero_iet": 0.423038728897716,
+   "rhythm_jit": 0.5036887739580165,
+   "logdur": 6.259337019016446,
+   "degree_mmd": 0.174
+  },
+  "weibo_tech:L1": {
+   "n": 4900,
+   "run": "offline-run-20260901_103124-0s4w39kn",
+   "dataset": "weibo_tech",
+   "ks": 0.3311057021209229,
+   "Z_ks": 7.169143677292246,
+   "M_as_gen": -0.005887054927118223,
+   "M_dedup": -0.011336058145382511,
+   "M_ref": 0.23276998820640077,
+   "abs_M_gap": 0.238657043133519,
+   "Z_M": 3.9551492186418797,
+   "q_ks": 0.07142857142857142,
+   "zero_iet": 0.49046399089097636,
+   "rhythm_jit": 0.4314285714285714,
+   "logdur": 6.80584101916848,
+   "degree_mmd": 0.116
+  }
+ },
+ "slm_eff": {
+  "wikirevision:L0": {
+   "events": 9000,
+   "calls_per_event": 2.05,
+   "in_tok_per_event": 3135,
+   "out_tok_per_event": 361,
+   "cost_usd": 4.78,
+   "s_per_event": 1.04
+  },
+  "wikirevision:L1": {
+   "events": 5696,
+   "calls_per_event": 2.5,
+   "in_tok_per_event": 5084,
+   "out_tok_per_event": 422,
+   "cost_usd": 4.48,
+   "s_per_event": 7.72
+  },
+  "dianping:L0": {
+   "events": 9000,
+   "calls_per_event": 1.87,
+   "in_tok_per_event": 2782,
+   "out_tok_per_event": 525,
+   "cost_usd": 5.08
+  },
+  "weibo_daily:L0": {
+   "events": 9000,
+   "calls_per_event": 2.81,
+   "in_tok_per_event": 3946,
+   "out_tok_per_event": 386,
+   "cost_usd": 5.74
+  },
+  "weibo_tech:L0": {
+   "events": 9000,
+   "calls_per_event": 2.8,
+   "in_tok_per_event": 4011,
+   "out_tok_per_event": 378,
+   "cost_usd": 5.77
+  },
+  "dianping:L1": {
+   "events": 5650,
+   "calls_per_event": 2.57,
+   "in_tok_per_event": 6042,
+   "out_tok_per_event": 799,
+   "cost_usd": 6.05
+  },
+  "weibo_daily:L1": {
+   "events": 5350,
+   "calls_per_event": 4.49,
+   "in_tok_per_event": 9221,
+   "out_tok_per_event": 822,
+   "cost_usd": 7.77
+  },
+  "weibo_tech:L1": {
+   "events": 4900,
+   "calls_per_event": 4.68,
+   "in_tok_per_event": 9482,
+   "out_tok_per_event": 753,
+   "cost_usd": 7.11
+  }
+ }
+}

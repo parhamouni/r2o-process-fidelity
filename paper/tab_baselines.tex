@@ -1,0 +1,38 @@
+\begin{table}[h]
+\caption{Timing baseline results on the inherited evaluation window. Baselines condition only on the 1,000-edge seed prefix. Baseline values report mean and standard deviation over 20 simulation seeds. Agent configurations are single archived runs scored using the same global stream timing statistics; this global KS differs from the actor level matched slot KS of Table~\ref{tab:complete-configs}. $\rho_1$ is the global stream lag 1 autocorrelation of the generated stream, with the real value in parentheses: mean over seeds for baselines; for agent rows (Qwen3-30B-A3B) the single archived run on the deduplicated stream, with the real value at the cell's matched horizon. $\rho_1$ is a global stream statistic and need not agree with the per actor memory coefficient $M$ of Table~\ref{tab:complete-configs}. Removing tied events or collapsing the stream to distinct timestamps changes the agent values by at most 0.004 (\texttt{analysis/rho1\_tie\_check.csv}), so they do not arise from round batching.}
+\label{tab:timing-baselines}
+\centering\small
+\begin{tabular}{llrrr}
+\toprule
+Dataset & Generator & Inter-event KS & Burst gap & $\rho_1$ (real $\rho_1$) \\
+\midrule
+dianping & seed-IET bootstrap & $0.072\pm0.004$ & $+0.025\pm0.025$ & $-0.002$ ($0.217$) \\
+ & Hawkes (seed MLE) & $0.195\pm0.030$ & $-0.004\pm0.018$ & $+0.246$ ($0.217$) \\
+ & Poisson (seed rate) & $0.281\pm0.005$ & $-0.510\pm0.007$ & $-0.001$ ($0.217$) \\
+ & agent L0 & $0.823$ & $+0.465$ & $+0.084$ ($0.217$) \\
+ & agent L1 & $0.559$ & $+0.453$ & $+0.428$ ($0.217$) \\
+ & agent L2 & $0.580$ & $+0.463$ & $+0.008$ ($0.217$) \\
+\addlinespace[2pt]
+wikirevision & seed-IET bootstrap & $0.394\pm0.004$ & $+0.302\pm0.012$ & $-0.002$ ($0.230$) \\
+ & Hawkes (seed MLE) & $0.342\pm0.039$ & $+0.327\pm0.097$ & $+0.307$ ($0.230$) \\
+ & Poisson (seed rate) & $0.663\pm0.004$ & $-0.385\pm0.007$ & $-0.001$ ($0.230$) \\
+ & agent L0 & $0.632$ & $+0.563$ & $+0.610$ ($0.230$) \\
+ & agent L1 & $0.346$ & $+0.590$ & $+0.000$ ($0.230$) \\
+ & agent L2 & $0.336$ & $+0.590$ & $+0.000$ ($0.230$) \\
+\addlinespace[2pt]
+weibo\_daily & seed-IET bootstrap & $0.065\pm0.004$ & $-0.377\pm0.017$ & $+0.000$ ($0.358$) \\
+ & Hawkes (seed MLE) & $0.112\pm0.000$ & $-0.417\pm0.015$ & $+0.204$ ($0.358$) \\
+ & Poisson (seed rate) & $0.186\pm0.005$ & $-0.684\pm0.007$ & $-0.001$ ($0.358$) \\
+ & agent L0 & $0.602$ & $+0.275$ & $+0.158$ ($0.358$) \\
+ & agent L1 & $0.532$ & $+0.283$ & $+0.005$ ($0.358$) \\
+ & agent L2 & $0.538$ & $+0.289$ & $+0.006$ ($0.253$) \\
+\addlinespace[2pt]
+weibo\_tech & seed-IET bootstrap & $0.122\pm0.005$ & $-0.315\pm0.005$ & $+0.002$ ($0.301$) \\
+ & Hawkes (seed MLE) & $0.172\pm0.001$ & $-0.304\pm0.009$ & $+0.144$ ($0.301$) \\
+ & Poisson (seed rate) & $0.306\pm0.005$ & $-0.540\pm0.007$ & $-0.001$ ($0.301$) \\
+ & agent L0 & $0.527$ & $+0.412$ & $+0.005$ ($0.301$) \\
+ & agent L1 & $0.468$ & $+0.438$ & $+0.056$ ($0.297$) \\
+ & agent L2 & $0.486$ & $+0.447$ & $+0.012$ ($0.296$) \\
+\bottomrule
+\end{tabular}
+\end{table}

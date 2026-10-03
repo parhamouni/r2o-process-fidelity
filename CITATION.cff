@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use R2O or these score tables, please cite the paper."
+title: "From Structural to Temporal Fidelity in Dynamic Graph Generation"
+authors:
+  - family-names: Hamouni
+    given-names: Parham
+    affiliation: Toronto Metropolitan University
+  - family-names: Bagheri
+    given-names: Ebrahim
+    affiliation: University of Toronto
+year: 2026
+conference:
+  name: "1st Workshop on Small Language Models for Agentic Systems (SLM-Agents), NeurIPS 2026"
+url: https://openreview.net/forum?id=u9Uy8jmI75
+repository-code: https://github.com/parhamouni/r2o-process-fidelity
+license: MIT

@@ -1,0 +1,559 @@
+\documentclass{article}
+
+% neurips_2026.sty, used unmodified, submission (anonymous) mode.
+% Provenance: the official download URLs on neurips.cc/media.neurips.cc were
+% unreachable (404) on 2026-08-31; this copy was obtained from a public
+% mirror of the official style (ProvidesPackage 2026-01-29 NeurIPS 2026
+% submission/camera-ready style file). Before camera-ready, re-verify this
+% file byte-for-byte against the official NeurIPS 2026 release.
+\usepackage[dblblindworkshop,final]{neurips_2026}
+\workshoptitle{SLMs for Agentic Systems, Paris, France, 2026}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\renewcommand{\ttdefault}{lmtt}  % Latin Modern typewriter (Type 1) instead of bitmap EC typewriter
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts,amsmath}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{etoolbox}
+\raggedbottom
+\renewcommand{\topfraction}{0.95}\renewcommand{\textfraction}{0.05}\renewcommand{\floatpagefraction}{0.9}
+% tighten float/text separation (page budget)
+\setlength{\textfloatsep}{9pt plus 2pt minus 3pt}
+\setlength{\floatsep}{7pt plus 2pt minus 2pt}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+
+\usepackage{amsthm}
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+\newcommand{\stmp}{S_{\text{temporal}}}
+\newcommand{\Gagg}{\bar G}
+\newcommand{\iet}{\tau}
+\newcommand{\qrr}{q_{RR}}
+
+% Title alternatives considered for SLM-Agents fit (author decision):
+%  (a) Scaffold Does Not Buy Temporal Fidelity: State Fidelity Is Not Process Fidelity in Efficient LM-Agent Simulators
+%  (b) Does Smaller Buy Realism? State Fidelity Is Not Process Fidelity in Efficient LM-Agent Simulators
+\title{From Structural to Temporal Fidelity in Dynamic Graph Generation}
+
+\author{%
+  Parham Hamouni\\
+  Toronto Metropolitan University\\
+  \texttt{parham.hamouni@torontomu.ca}
+  \And
+  Ebrahim Bagheri\\
+  University of Toronto\\
+  \texttt{ebrahim.bagheri@utoronto.ca}
+}
+
+
+\begin{document}
+\maketitle
+\begin{abstract}
+Language model agents are increasingly used to simulate dynamic text attributed
+graphs, but it is unclear whether more efficient systems preserve the temporal
+dynamics of real interaction streams. Existing evaluations mainly measure
+\emph{state fidelity} through structural, textual, and marginal timing
+statistics, while applications such as forecasting and intervention analysis
+also require \emph{process fidelity}. We show that statistics based only on
+marginal behavior cannot distinguish a process that preserves event ordering
+from one that destroys temporal dependence. We therefore introduce R2O, a
+likelihood-free framework that evaluates temporal fidelity along three
+dimensions. \emph{Rate} measures the pace of activity, \emph{Rhythm} measures
+the distribution of inter-event times, and \emph{Order} measures dependence
+between consecutive intervals. Each discrepancy is calibrated against
+variation between matched windows of real data. Across three scaffold configurations, three backbones, and four datasets,
+R2O reveals a consistent separation between structural and temporal fidelity.
+Configurations that improve structural realism do not consistently move closer
+to the real temporal process, and no preregistered configuration reproduces
+the temporal dependence observed in the real streams. Changing the language model backbone changes
+which temporal properties are better matched, but does not yield consistent
+agreement across Rate, Rhythm, and Order. These results show that structural
+fidelity alone is insufficient for evaluating efficient dynamic graph
+generation.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+Language model agents are increasingly used to simulate evolving social and
+interaction systems represented as dynamic text attributed graphs
+\citep{zhang2024dtgb,ji2025gag,peng2025gdgb,ji2026graphia}. Such systems combine
+language model decisions with interaction history, memory, and tool use to
+generate both graph structure and text over time. Simulation over large
+populations and long horizons makes inference cost a central design constraint,
+which motivates the use of smaller language model backbones
+\citep{belcak2025slm,yang2025qwen3}. In practice, reduced backbone capacity can
+also be paired with richer agent scaffolding. This creates an important
+question for small model agent systems. Whether a cheaper backbone, additional
+scaffolding, or their combination preserves the process that the agents are
+intended to simulate cannot be determined from efficiency or output realism
+alone.
+
+This issue is different from asking whether a small model can reproduce the
+same individual decisions or final graph statistics as a larger model. In an
+agent simulation, backbone and scaffold choices are repeatedly applied as the
+system evolves, so apparently local differences can alter when interactions
+occur and how subsequent activity depends on prior events. A configuration can
+therefore produce plausible agents and realistic graph structure while
+generating a different temporal process. For efficient agent systems, the
+relevant tradeoff is consequently not only quality against computational cost,
+but fidelity of the generated process against computational cost. Evaluating
+that tradeoff requires measurements that remain meaningful when backbone and
+scaffold choices change the dynamics without substantially changing the
+resulting states.
+
+Existing graph generation evaluation does not directly provide such a test.
+Static graph generators are primarily compared through structural statistics
+such as degree, clustering, and motifs
+\citep{you2018graphrnn,liao2019gran,obray2022evaluation}. DyTAG systems extend
+this evaluation to generated text, activity trajectories, and marginal
+timestamp statistics \citep{ji2025gag,peng2025gdgb,ji2026graphia}. Related
+language model social simulations have begun to model temporal behavior more
+explicitly. These approaches
+demonstrate the importance of temporal behavior, but the literature summarized
+in Appendix~\ref{app:landscape} does not provide an evaluation framework for
+LM agent DyTAG streams that jointly tests order sensitive event dependence and
+interprets the resulting discrepancy relative to variation between comparable
+real streams.
+
+We refer to agreement on generated structure, text, and marginal activity
+statistics as \emph{state fidelity}. For many uses of simulation, matching the
+state is not sufficient. Forecasting, intervention analysis, and synthetic
+event generation depend on how future events vary with preceding history. We
+call agreement in this conditional evolution \emph{process fidelity}. For a
+graph sequence $G_{1:T}$, the distinction is between properties of the
+marginal distribution $P(G_t)$ and properties of the conditional distribution
+$P(G_t\mid G_{<t})$. This distinction is particularly relevant when comparing
+small model backbones and agent scaffolds because two configurations can agree
+on the states they produce while differing in how those states evolve.
+
+Marginal agreement does not identify temporal dependence. Permuting an actor's
+inter-event times preserves its event count, inter-event time distribution,
+and statistics computed from the time aggregated graph while changing the
+order in which activity unfolds. We formalize this observation and show that
+statistics depending only on the aggregated graph or unordered inter-event
+times are invariant to this transformation. Process fidelity therefore
+requires at least one statistic that responds to event order.
+
+We introduce R2O, a likelihood-free framework that evaluates temporal process
+fidelity along three separate axes. \emph{Rate} measures activity pace,
+\emph{Rhythm} measures the inter-event time distribution, and \emph{Order}
+measures dependence between consecutive intervals. Each discrepancy is
+interpreted relative to variation between matched windows of the real stream.
+We establish order sensitivity, separation among the three axes, and finite
+sample calibration, and validate these properties with shuffled and memoryless
+controls. Proofs and synthetic validation are provided in
+Appendix~\ref{app:proofs}.
+
+Our contributions are (1) a formal distinction between state and process
+fidelity for LM agent DyTAG simulation, together with an invariance result
+showing why structural and marginal timing statistics cannot detect loss of
+event order, (2) R2O, which separately evaluates activity rate, inter-event
+time distributions, and temporal dependence relative to variation within the
+real data, and (3) an evaluation across scaffold configurations, backbones,
+and datasets that tests whether structural improvements obtained through
+backbone and scaffold choices also preserve temporal dynamics. Empirically,
+structural improvements do not reliably reduce temporal discrepancies,
+marginal timing agreement need not imply agreement in event dependence, and
+changing the language model backbone does not consistently resolve the gap
+across Rate, Rhythm, and Order. These results show why process fidelity is a
+necessary consideration when evaluating efficient agent simulation.
+
+\section{Requirements for measuring process fidelity}
+\label{sec:requirements}
+
+Temporal process fidelity requires more than agreement in aggregate properties.
+Human interaction streams are bursty and temporally correlated
+\citep{barabasi2005origin,goh2008burstiness,karsai2018bursty}, and streams with
+identical marginal statistics can differ in that dependence
+\citep{malmgren2008poissonian,holme2012temporal}. An evaluation must therefore
+respond to event order, distinguish sources of temporal error, and provide a
+scale on which discrepancies can be interpreted.
+
+\subsection{Event streams and classes of statistics}
+
+An event stream is
+$E=((u_i,v_i,x_i,t_i))_{i\le n}$, where $u_i$ and $v_i$ denote the
+interacting actors, $x_i$ is the associated text, and $t_i$ is a
+non decreasing timestamp. For actor $u$, let
+$\iet^u_j=t^u_{j+1}-t^u_j$ denote its $j$th inter-event time (IET),
+$T^u$ the multiset of its IETs, $T=\biguplus_u T^u$ the pooled IET
+multiset, and $\Gagg(E)$ the time aggregated graph.
+
+\begin{definition}[State, marginal timing, and dependence statistics]
+\label{def:state}
+A statistic is a \emph{state statistic} if it is computed from generated
+states without using the order of an actor's IETs. It is a \emph{marginal
+timing statistic} if it depends on timing only through the multisets
+$\{T^u\}_u$, and a \emph{dependence statistic} if changing the order of IETs
+within an actor can change its value.
+\end{definition}
+
+Structural statistics such as degree MMD, clustering, and motifs are widely
+used to compare generated and real graphs
+\citep{you2018graphrnn,liao2019gran,obray2022evaluation}. DyTAG generators also
+compare text similarity, activity trajectories, and count based temporal
+summaries \citep{ji2025gag,peng2025gdgb,ji2026graphia}. These are state
+statistics because they do not use IET order. Pooled IET KS, $W_1$ on log
+IETs, the burstiness gap $|\Delta B|$, and node rhythm divergence are marginal
+timing statistics \citep{goh2008burstiness,karsai2012universal}. Memory $M$
+and global lag 1 IET autocorrelation are dependence statistics because they
+use consecutive intervals. We use \emph{state fidelity} for agreement on state
+and marginal timing properties and \emph{process fidelity} for agreement in
+temporal dependence. A broader comparison is in Appendix~\ref{app:landscape}.
+
+\subsection{Requirement 1: sensitivity to event order}
+
+Agreement in marginal timing does not determine temporal dependence. Two
+processes can have the same IET distributions and time aggregated graph
+statistics while differing in how successive events depend on their history.
+
+\begin{proposition}[Non identification of temporal dependence]
+\label{prop:nonident}
+Let $F$ be any IET distribution with finite variance. Let $P_0$ generate each
+actor's IETs independently from $F$, and let $P_\rho$ generate them from a
+stationary Gaussian copula AR(1) process with the same marginal $F$ and
+parameter $\rho\in(0,1)$. If partner and text choices are identical and
+independent of event timing, then $P_0$ and $P_\rho$ have identical actor level
+IET marginals, identical burstiness, and identical distributions for every
+state statistic, while $M(P_\rho)>0=M(P_0)$.
+\end{proposition}
+
+The same limitation can be exposed directly on an observed stream. Let
+$\varsigma(E)$ independently permute the IET sequence of each actor.
+
+\begin{proposition}[Shuffle invariance]
+\label{prop:shuffle}
+Statistics that depend only on $\Gagg(E)$ or on the unordered IET multisets
+$\{T^u\}_u$ are unchanged by $\varsigma$. For an actor with $k_u\ge3$ IETs,
+\[
+\mathbb{E}[M^u(\varsigma(E))\mid E]=O(1/k_u).
+\]
+Thus, a generator can reproduce each actor's IET marginal while carrying no
+temporal memory and remain indistinguishable under order invariant statistics.
+\end{proposition}
+
+Process evaluation must therefore include at least one statistic that changes
+when event order changes. The construction and proofs of both propositions are
+provided in Appendix~\ref{app:proofs}.
+
+\subsection{Requirement 2: separation of failure modes}
+
+Temporal error can arise in different ways. A simulator may generate events at
+the wrong overall rate, reproduce the wrong distribution of inter-event times,
+or fail to reproduce dependence between consecutive intervals. These errors
+cannot be diagnosed reliably after they are collapsed into a scalar.
+
+\begin{proposition}[Separation under rate changes]
+\label{prop:separation}
+Under a global rescaling $\iet\mapsto a\iet$, burstiness $B$, memory $M$, and
+lag 1 autocorrelation are invariant. Pooled IET KS and node rhythm KS are not
+invariant, and
+\[
+\left|W_1(\log a\iet,\log\iet')-W_1(\log\iet,\log\iet')\right|
+\le |\log a|.
+\]
+Equality holds when the two unscaled log IET distributions coincide (the case
+checked in Table~\ref{tab:synthetic-validation}, where $W_1 = 2.996 = \log 20$);
+it need not hold for distributions of the same shape at different locations. Hence
+$\log(T_g/T_r)$ isolates rate, $B$ and $W_1(\log\iet)$ characterize
+marginal timing up to the stated rate term, and $M$ and lag 1 autocorrelation
+characterize dependence.
+\end{proposition}
+
+Rate, marginal timing, and temporal dependence should therefore be reported
+separately. These three failure modes define the \emph{Rate}, \emph{Rhythm},
+and \emph{Order} axes of R2O. The proof is given in
+Appendix~\ref{app:proofs}.
+
+\subsection{Requirement 3: calibration against real data variability}
+
+Raw discrepancy values do not have a common interpretation across datasets or
+evaluation windows. The same KS distance, Wasserstein distance, or change in
+memory may reflect ordinary variation in one dataset but a mismatch
+in another. Standard point process diagnostics can obtain a reference
+distribution from a specified conditional intensity
+\citep{ogata1988statistical,brown2002timerescaling}, but the LM agent DyTAG
+generators considered here do not expose a tractable conditional event
+likelihood \citep{ji2025gag,peng2025gdgb,ji2026graphia}. We therefore
+interpret each simulator to real discrepancy relative to the same discrepancy
+measured between matched windows of the real stream.
+
+For a simulator to real discrepancy $D^{SR}$, let $D^{RR}_{1:N}$ denote the
+same discrepancy computed between $N$ matched pairs of real windows and define
+\[
+q_{\mathrm{RR}}=
+\frac{1+\#\{i:D^{RR}_i\ge D^{SR}\}}{N+1}.
+\]
+
+\begin{proposition}[Finite sample calibration]
+\label{prop:calibration}
+If $D^{SR}$ is exchangeable with $D^{RR}_{1:N}$, then
+$\Pr(q_{\mathrm{RR}}\le\alpha)\le\alpha$ for every $\alpha\in[0,1]$.
+Moreover, $q_{\mathrm{RR}}=1/(N+1)$ exactly when $D^{SR}$ exceeds every real
+to real discrepancy.
+\end{proposition}
+
+The calibration places each simulator discrepancy on the scale of variability
+already present in the observed process. R2O applies it separately to each
+axis rather than combining heterogeneous discrepancies into a single score.
+The proof and matching details are given in Appendices~\ref{app:proofs}
+and~\ref{app:instrument}.
+
+These requirements define how R2O should distinguish different forms
+of temporal mismatch. Structural improvements need not reduce temporal
+discrepancies, agreement on Rhythm need not imply agreement on Order, and the
+three axes may favor different configurations. A discrepancy should also remain
+outside the matched real reference after accounting for plausible measurement
+artifacts. Section~\ref{sec:results} evaluates these patterns empirically.
+
+\section{The R2O framework}
+\label{sec:r2o}
+
+Given a generated stream $E_g$ and a corresponding real stream $E_r$ (complete
+streams, or matched continuations of a common observed history), R2O computes
+discrepancies along Rate, Rhythm, and Order and calibrates each against
+matched real data segments.\label{sec:r2o_protocol} It does not prescribe how
+$E_g$ is produced, so it scores conditioned and closed loop generation alike,
+keeping generation and evaluation separate.
+
+\subsection{Rate, Rhythm, and Order}
+\label{sec:r2o_axes}
+
+\noindent \textbf{Rate}
+Rate measures agreement in the pace of activity. For generated and
+real durations $T_g$ and $T_r$,
+\[
+D_{\mathrm{Rate}}=\left|\log\frac{T_g}{T_r}\right|.
+\]
+The discrepancy is zero when the two time scales agree and changes under
+uniform rescaling while the Order statistics remain invariant.
+
+\noindent \textbf{Rhythm}
+Rhythm measures agreement in the marginal distribution of IETs without using
+their sequential order. At the population level, R2O uses pooled IET KS,
+Wasserstein distance on log IETs, and the burstiness difference $|\Delta B|$
+\citep{goh2008burstiness,karsai2012universal}. At the actor level, node rhythm
+divergence is
+\[
+D_{\mathrm{node}}=
+\operatorname*{median}_{u}\mathrm{KS}\!\left(T_g^u,T_r^u\right).
+\]
+The pooled statistics characterize population timing, while node rhythm
+preserves actor identity and can expose discrepancies hidden by pooling.
+
+\noindent \textbf{Order}
+Order measures agreement in dependence between consecutive intervals. R2O
+uses $D_M=|M_g-M_r|$ and
+$D_{\rho}=|\rho_{1,g}-\rho_{1,r}|$. Unlike Rhythm, these statistics change
+when the same intervals are reordered. They distinguish streams that
+share an IET distribution but differ in temporal dependence, which is the
+failure mode established by Propositions~\ref{prop:nonident}
+and~\ref{prop:shuffle}. R2O does not combine Rate, Rhythm, and Order into a scalar because
+agreement on one axis need not imply agreement on others.
+
+\subsection{Calibration with real data}
+\label{sec:r2o_calibration}
+
+Each discrepancy is interpreted relative to matched real segments. The same R2O
+statistic is computed across observed window pairs to form a real reference
+distribution, and the simulator is located within its upper tail using
+$q_{\mathrm{RR}}$. A small value indicates a discrepancy larger than typical
+variation in the real process. Matching and controls for timestamp ties,
+scheduler quantization, actor activity, and window selection are described in
+Appendix~\ref{app:instrument}.
+
+\noindent \textbf{Construction of the real reference}
+R2O builds the reference from pairs of 10,000 edge real windows matched on
+duration, actor count, edges per actor, and median positive IET, using up to 60
+pairs per dataset with reuse of any window capped at three. We report
+$q_{\mathrm{RR}}$ together with a standardized discrepancy $Z_D$ in units of
+real variation. The calibration compares each simulator against
+comparable real activity regimes rather than arbitrary windows. Full details
+are in Appendix~\ref{app:instrument}.
+
+\begin{figure}[!t]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{fig1_memory.pdf}
+\caption{\textbf{Order: memory coefficient $M$ by dataset and scaffold level.}
+Grey bands give the range of real $M$ over matched windows; dashed lines give
+real $M$ after harness quantization (Appendix~\ref{app:instrument}). Markers
+are generated $M$ for the Qwen3-30B-A3B ladder (L0/L1/L2), GPT-4o-Mini, and
+the exploratory Qwen3-8B cells. No Qwen3-30B-A3B cell reaches the real band;
+GPT-4o-Mini on wikirevision L0 overshoots it ($M = +0.43$), and the closest
+point, the exploratory Qwen3-8B wikirevision L0 cell ($Z_{|\Delta M|} = +1.2$),
+does not survive matched horizon rescoring (Table~\ref{tab:matched-horizon};
+\S\ref{sec:backbone}). Values: Appendix~\ref{app:tables}.}
+\label{fig:memory}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{fig2_decoupling.pdf}
+\caption{\textbf{Structure versus timing.} (a) Percent change from L0 to L1 in
+degree MMD (structure) and inter-event KS (Rhythm); negative is better. Structure
+improves on all four datasets while Rhythm moves in both directions. (b)
+Inter-event KS of the agent cells against the Poisson, seed-IET bootstrap, and
+Hawkes timing baselines; the bootstrap, which has no temporal dependence by
+construction, is lowest on three of four datasets. Values:
+Appendix~\ref{app:tables}.}
+\label{fig:decoupling}
+\end{minipage}
+\end{figure}
+
+\noindent \textbf{Synthetic validation of axis separation}
+Synthetic controls verify the intended separation before model evaluation.
+Shuffling a dependent stream preserves its IET distribution and burstiness
+while reducing memory from $0.164$ to $-0.007$; an independent renewal process
+with the same marginal behaves similarly. Rescaling time by a factor of 20
+leaves memory at $0.164$ while moving IET KS to $0.686$ and log Wasserstein
+distance to $2.996$. The complete validation is in Appendix~\ref{app:proofs}.
+
+\section{Experiments and findings}
+\label{sec:results}
+
+
+We evaluate R2O on \texttt{dianping}, \texttt{wikirevision},
+\texttt{weibo\_daily}, and \texttt{weibo\_tech}, the four GDGB datasets with
+suitable temporal information \citep{peng2025gdgb}; GRAPHIA lacks continuous
+timestamps (Appendix~\ref{app:graphia}). The primary experiments compare L0, which reproduces GAG General \citep{ji2025gag}, L1,
+which adds tool use, and L2, which additionally includes a memory module
+(distinct from the memory coefficient $M$ of \S\ref{sec:r2o_axes}). Qwen3-30B-A3B
+is the primary backbone, GPT-4o-Mini provides matched backbone comparisons, and
+Qwen3-8B is exploratory; the primary analysis contains 16 preregistered
+configurations. Each run starts from a real prefix and is scored against the
+corresponding real continuation, alongside Poisson, empirical IET bootstrap,
+and Hawkes timing baselines. For Qwen3-8B, L0 uses 1.9 to 2.8 language model
+calls per event and L1 uses 2.5 to 4.7, with 1.6 to 2.4 times more prompt
+tokens (details: Appendix~\ref{app:setup}).
+
+\noindent \textbf{R2O separates structural improvement from process fidelity}
+From L0 to L1, degree MMD improves on all four datasets by $43.8\%$ on
+average, while inter-event KS changes in mixed directions, from $-38.0\%$ to
+$+18.5\%$ across datasets ($-4.8\%$ on average; Figure~\ref{fig:decoupling}). Even the best structural configuration on each
+dataset remains outside the corresponding real reference on temporal measures.
+On the representative wikirevision window (GPT-4o-Mini;
+Appendix~\ref{app:instrument}), the log duration ratio also worsens from
+$3.83$ to $4.44$, or approximately $46$ to $85$ times the real duration:
+structural improvement does not imply temporal process fidelity.
+
+\noindent \textbf{The Order axis detects discrepancies that Rhythm cannot identify}
+Real memory coefficients range from $0.10$ to $0.27$, but none of the 16 preregistered
+ configurations reproduces this dependence. Across the 12 Qwen3-30B-A3B
+ configurations, memory ranges from $-0.28$ to $0.03$, and every
+configuration lies outside the real reference range on the memory discrepancy
+(Figure~\ref{fig:memory}). Rhythm fails less uniformly: actor level rhythm divergence lies inside the
+real reference ($|Z| \le 2$) on 7 of the 16 configurations, so a simulator can approach
+actors' IET distributions without reproducing dependence between successive
+intervals. This is the distinction for which Order is
+needed.
+
+\noindent \textbf{The R2O axes reveal different effects of the language model backbone}\label{sec:backbone}
+Matched Qwen3-30B-A3B and GPT-4o-Mini comparisons improve some temporal
+measures while worsening others, and exploratory Qwen3-8B runs show the same
+pattern. The only 8B configuration approaching real memory also has the
+largest marginal timing discrepancy in that set, and matched horizon controls
+place memory near the shuffled value in all eight exploratory arms. Backbone
+changes therefore alter which temporal properties are matched without
+consistent improvement on Rate, Rhythm, and Order.
+
+\noindent \textbf{The timing baselines show why Rhythm alone is insufficient}
+The empirical IET bootstrap samples intervals independently from the observed
+seed distribution, retaining marginal timing but not temporal dependence. It
+outperforms every agent configuration on inter-event KS on three of four
+datasets (Figure~\ref{fig:decoupling}; $0.065$ to $0.122$ versus $0.468$ to
+$0.559$ for the best agent). Generating neither structure nor text, it is
+diagnostic: it instantiates Proposition~\ref{prop:nonident}, with global lag 1
+autocorrelation $-0.002$ to $+0.002$ (20 seeds) against real $0.22$ to $0.36$,
+so strong Rhythm coexists with complete failure on Order. The Hawkes baseline,
+in contrast, partially recovers the temporal dependence observed in the real
+data, with lag 1 autocorrelation of $0.14$ to $0.31$ against $0.22$ to $0.36$
+in the real sequences, so the seed prefix contains recoverable temporal
+dependence that a seed-conditioned generator can partially reproduce; the
+Qwen3-30B-A3B agent streams fall below the real value in 10 of 12 cells and
+overshoot it in the other two (Appendix~\ref{app:tables}).
+
+
+
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figA_controls.pdf}
+\caption{\textbf{R2O under measurement controls.} Count matching leaves
+marginal timing largely unchanged, while standardized temporal discrepancies
+remain outside the matched real reference.}
+\label{fig:controls}
+\end{figure}
+
+\noindent \textbf{R2O findings remain stable under measurement controls}
+Matching actor level event counts has little effect on marginal timing, and the
+standardized R2O scores remain outside variation across matched real windows
+(Figure~\ref{fig:controls}). The Order discrepancy also persists after controls
+for timestamp ties, scheduler quantization, and evaluation window selection;
+in particular, imposing the generation scheduler on the real stream changes
+real memory by between a $49\%$ reduction and a $39\%$ increase yet leaves it
+above every Qwen3-30B-A3B generated value on all four datasets, so neither
+the harness nor the scoring procedure explains the gap (controls:
+Appendix~\ref{app:instrument}; proofs: Appendix~\ref{app:proofs}).
+
+\noindent \textbf{Limitations}\label{sec:limitations}
+The evaluation covers one DyTAG system lineage and shared generation pipeline,
+with teacher forced generation and four datasets. Teacher forcing is expected to
+understate Order error, since dependence errors cannot compound when real
+history is re-injected; Rate and Rhythm could move in either direction under
+closed loop rollout, which is what the preregistered roll forward test
+measures. The scheduler control rules out timestamp quantization alone as the
+source of the Order gap, but whether the language model or the scheduler
+decides event timing remains open; the preregistered timing locus test
+(Appendix~\ref{app:followups}) addresses this. Order uses lag 1 statistics ($M$, $\rho_1$) and can miss longer
+range or nonlinear dependence. Configurations are single archived runs rather
+than replicated seeds, some terminate before the nominal horizon, and API
+served backbones carry provider side serving opacity. Real to real calibration
+measures variation across observed windows but does not estimate generation
+seed uncertainty; $q_{\mathrm{RR}}$ is an empirical tail position, not a
+hypothesis test value, with floor $1/14$ on \texttt{weibo\_tech} (13 pairs),
+where the conclusion rests on $Z$. Downstream consequences for forecasting or
+intervention analysis are not measured here. Additional limitations and
+serving details are in Appendix~\ref{app:limitations}.
+
+\section{Conclusion}
+State fidelity is not process fidelity. Statistics computed from marginal
+behavior are invariant to the within actor reordering that erases temporal
+dependence, so a simulator can match structure, text, counts, and inter-event
+time distributions while generating a process unlike the real one. R2O makes
+the missing axis measurable: it separates Rate, Rhythm, and Order and reports
+each against the variability between matched real windows. Applied to an
+efficient LM agent lineage, it shows that scaffolding improves structural
+fidelity without repairing temporal dependence, that backbone choice moves the
+deficit rather than removing it, and that a parameter free bootstrap of seed
+inter-event times matches the real Rhythm better than every agent
+configuration on three of four datasets. Evaluations of agent based simulators
+intended for forecasting or intervention analysis should therefore include an
+order sensitive, real reference calibrated test alongside state metrics.
+
+\begin{ack}
+This research was supported by the Natural Sciences and Engineering Research
+Council of Canada (NSERC), grant number RGPIN-2024-04733.
+\end{ack}
+
+\clearpage
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\clearpage
+\input{appendices}
+
+\clearpage
+\input{checklist}
+
+\end{document}

@@ -1,0 +1,17 @@
+\begin{table}[t]
+\centering
+\caption{Synthetic validation of the R2O requirements. The reference stream has memory 0.164 and burstiness 0.464.}
+\label{tab:synthetic-validation}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Transformation & IET KS & $W_1(\log\tau)$ & $|\Delta B|$ & $M$ \\
+\midrule
+Faithful replicate & 0.004 & 0.009 & 0.042 & 0.169 \\
+Actor-level shuffle & 0.000 & 0.000 & 0.000 & -0.007 \\
+Independent renewal with same marginal & 0.006 & 0.015 & 0.039 & -0.009 \\
+Rate multiplied by 20 & 0.686 & 2.996 & 0.000 & 0.164 \\
+Rate multiplied by 20 with shuffle & 0.686 & 2.996 & 0.000 & -0.022 \\
+\bottomrule
+\end{tabular}
+\end{table}

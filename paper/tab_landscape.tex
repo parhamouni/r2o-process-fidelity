@@ -1,0 +1,180 @@
+\begin{table}[t]
+\centering
+\caption{Evaluation practices for graph simulators and LM social simulators.
+Metric classes are S for snapshot structural, T for text, MT for marginal
+temporal, D for temporal dependence, L for predictive or likelihood based,
+and CL for closed loop rollout. Dep. records whether temporal dependence of
+the generated stream is tested. CL records whether a closed loop test is
+performed. Every row is explicitly cited.}
+\label{tab:evaluation-landscape}
+\scriptsize
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lllll}
+\toprule
+Reference & System / topic & Class & Dep. & CL \\
+\midrule
+
+\multicolumn{5}{l}{\textit{Static graph generation}} \\
+
+\citet{you2018graphrnn}
+    & GraphRNN, static autoregressive graph generator & S/L & no & no \\
+
+\citet{bojchevski2018netgan}
+    & NetGAN, random walk static graph generator & S/L & no & no \\
+
+\citet{liao2019gran}
+    & GRAN, static graph generator & S & no & no \\
+
+\citet{chanpuriya2021edge}
+    & Theory of edge independent graph models & S & no & no \\
+
+\citet{thompson2022evaluation}
+    & Critique of graph generative evaluation & S & no & no \\
+
+\citet{obray2022evaluation}
+    & Critique of graph generative evaluation & S & no & no \\
+
+\citet{shirzad2022contrastive}
+    & Graph generative evaluation & S & no & no \\
+
+
+\midrule
+\multicolumn{5}{l}{\textit{Temporal graph generation and benchmarks}} \\
+
+\citet{holme2012temporal}
+    & Review of temporal networks & MT/D & yes & no \\
+
+\citet{sizemore2018dynamic}
+    & Dynamic graph metrics tutorial & D & partial & no \\
+
+\citet{zhou2020taggen}
+    & TagGen, temporal interaction network generator & S & no & no \\
+
+\citet{zeno2021dymond}
+    & DYMOND, motif based dynamic network generator & S/MT & partial & no \\
+
+\citet{zhang2021tggan}
+    & TG GAN, continuous time temporal graph GAN & S/MT & no & no \\
+
+\citet{poursafaei2022better}
+    & Evaluation critique for dynamic link prediction & L & partial & no \\
+
+\citet{gupta2022survey}
+    & Survey of temporal graph representation learning and generation
+    & S/L & no & no \\
+
+\citet{clarkson2022damnets}
+    & DAMNETS, Markovian network time series generator & S & no & no \\
+
+\citet{gauvin2022randomized}
+    & Randomized reference models for temporal networks & D & yes & no \\
+
+\citet{gupta2022tigger}
+    & TIGGER & S/MT & no & no \\
+
+\citet{huang2023tgb}
+    & TGB benchmark, temporal graph learning & L & no & no \\
+
+\citet{zhang2024dtgb}
+    & DTGB benchmark, DyTAG discriminative tasks & T/L & no & no \\
+
+\citet{xiang2025efficient}
+    & Learning based temporal graph simulator & S & no & no \\
+
+\citet{du2025graphmaster}
+    & GraphMaster, LM agent graph synthesis & S/T & no & no \\
+
+\citet{chang2025structurally}
+    & LM generated social networks & S & no & no \\
+
+\citet{hosseini2025quality}
+    & Quality measures for dynamic graph generative models
+    & S & partial & no \\
+
+
+\midrule
+\multicolumn{5}{l}{\textit{LM generated graphs}} \\
+
+\citet{ji2025gag}
+    & GAG, LM multi agent DyTAG generator & S/T/MT & no & no \\
+
+\citet{peng2025gdgb}
+    & GDGB benchmark & S/T/MT & no & no \\
+
+\citet{ji2026graphia}
+    & GRAPHIA & S/T & no & no \\
+
+
+\midrule
+\multicolumn{5}{l}{\textit{LM social simulation}} \\
+
+\citet{park2022simulacra}
+    & Social Simulacra, LM populated prototypes & -- & no & no \\
+
+\citet{park2023generative}
+    & Generative Agents, Smallville & -- & no & no \\
+
+\citet{gao2023s3}
+    & S3, LM social network simulation & T/MT & no & no \\
+
+\citet{tornberg2023simulating}
+    & LM social media simulation for feed algorithms & -- & no & no \\
+
+\citet{gao2024survey}
+    & Survey of LM empowered agent based modeling & -- & no & no \\
+
+\citet{rossetti2024ysocial}
+    & Y Social, LM social media digital twin & S/T & no & no \\
+
+\citet{mou2024hisim}
+    & HiSim, social movement simulation & T/MT & no & no \\
+
+\citet{yang2024oasis}
+    & OASIS, million agent social media simulator & T/MT & no & no \\
+
+\citet{chuang2024opinion}
+    & LM opinion dynamics & MT & no & no \\
+
+\citet{piao2025agentsociety}
+    & AgentSociety, large scale LM agent society & -- & no & no \\
+
+\citet{wang2025recagent}
+    & RecAgent, LM user behavior simulator & -- & no & no \\
+
+\citet{larooij2025critical}
+    & Critical review of generative social simulations & -- & no & no \\
+
+\citet{saeedi2025mosaic}
+    & MOSAIC, content dissemination simulation & S/MT & no & no \\
+
+\citet{zhang2025socioverse}
+    & SocioVerse, world model with a large user pool & -- & no & no \\
+
+\citet{tomasevic2026operational}
+    & Operational validation on Y Social and Voat & S/T/MT & no & no \\
+
+\citet{koley2025salm}
+    & SALM & S/T & no & no \\
+
+\citet{zhang2026posim}
+    & POSIM, Hawkes driven public opinion simulator & T/MT & partial & no \\
+
+\citet{mou2026society}
+    & Survey of LM agent social simulation & -- & no & no \\
+
+\citet{schwager2026operational}
+    & Conditioned Comment Prediction, operational validity & T & no & no \\
+
+\citet{deng2026hawkesllm}
+    & HawkesLLM, Hawkes and LM cascade simulator & T & no & partial \\
+
+\citet{miao2026email}
+    & LM multi agent email networks with Hawkes guidance
+    & MT/D/CL & partial & yes \\
+
+\citet{zhang2026crisis}
+    & Hawkes gated crisis response simulator & MT/D & yes & no \\
+
+\bottomrule
+\end{tabular}}
+\end{table}

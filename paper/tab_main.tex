@@ -1,0 +1,36 @@
+\begin{table}[t]
+\caption{Complete results for the 16 preregistered configurations and eight exploratory Qwen3-8B configurations. Degree MMD reports structural error; KS is pooled actor level inter-event KS against matched reference slots (not the global stream KS of Table~\ref{tab:timing-baselines}); $Z_{\mathrm{KS}}$ is the same discrepancy in real reference units; $M$ is the memory coefficient from the deduplicated representation, with the real value in parentheses; $q_{\mathrm{RR}}$ is the empirical real reference tail position. Superscript $s$ marks a short run; $c$ marks a structural evaluation affected by contamination (\texttt{weibo\_daily} L2 excluded; \texttt{weibo\_tech} L2 scored on the archived 8.65k-edge run); $t$ marks the 200 event truncated archive, for which the structural evaluation is unavailable and timing uses matched slots at the available horizon; $e$ marks exploratory Qwen3-8B configurations added after registration (L1 runs stopped at round boundaries, 4,900 to 5,696 events, so 8B L0 and L1 rows are scored at different event counts; see Table~\ref{tab:matched-horizon}).}
+\label{tab:complete-configs}
+\centering\scriptsize
+\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{0.86}
+\begin{tabular}{lllrrrrr}
+\toprule
+Dataset & Backbone & Cell & Deg.\ MMD & KS & $Z_{\mathrm{KS}}$ & $M$ ($M^{\mathrm{real}}$) & $q_{\mathrm{RR}}$ \\
+\midrule
+dianping & Qwen3-30B-A3B & L0 & 0.052 & 0.372 & $+14.0$ & $-0.01$ (0.10) & 0.016 \\
+ &  & L1 & 0.026 & 0.440 & $+16.9$ & $-0.26$ (0.10) & 0.016 \\
+ &  & L2 & 0.034 & 0.433 & $+16.6$ & $-0.28$ (0.10) & 0.016 \\
+ & GPT-4o-Mini & L0 & 0.056 & 0.340 & $+12.6$ & $-0.10$ (0.10) & 0.016 \\
+ & Qwen3-8B & L0$^{e}$ & 0.059 & 0.444 & $+17.0$ & $-0.10$ (0.10) & 0.016 \\
+ &  & L1$^{e,s}$ & 0.045 & 0.578 & $+22.7$ & $-0.06$ (0.11) & 0.016 \\
+wikirevision & Qwen3-30B-A3B & L0 & 0.159 & 0.456 & $+22.5$ & $+0.03$ (0.20) & 0.016 \\
+ &  & L1 & 0.139 & 0.283 & $+13.2$ & $+0.00$ (0.20) & 0.016 \\
+ &  & L2 & 0.115 & 0.271 & $+12.6$ & $-0.01$ (0.20) & 0.016 \\
+ & GPT-4o-Mini & L0 & 0.151 & 0.328 & $+15.7$ & $+0.43$ (0.20) & 0.016 \\
+ &  & L1$^{s}$ & 0.121 & 0.228 & $+10.3$ & $-0.03$ (0.22) & 0.016 \\
+ & Qwen3-8B & L0$^{e}$ & 0.131 & 0.580 & $+29.1$ & $+0.16$ (0.20) & 0.016 \\
+ &  & L1$^{e,s}$ & 0.077 & 0.257 & $+11.8$ & $+0.01$ (0.25) & 0.016 \\
+weibo\_daily & Qwen3-30B-A3B & L0 & 0.273 & 0.305 & $+6.0$ & $-0.03$ (0.16) & 0.019 \\
+ &  & L1 & 0.112 & 0.339 & $+6.9$ & $-0.03$ (0.16) & 0.019 \\
+ &  & L2$^{s}$ & --$^{c}$ & 0.300 & $+5.9$ & $-0.03$ (0.17) & 0.019 \\
+ & Qwen3-8B & L0$^{e}$ & 0.239 & 0.299 & $+5.9$ & $+0.00$ (0.16) & 0.019 \\
+ &  & L1$^{e,s}$ & 0.137 & 0.296 & $+5.8$ & $-0.04$ (0.13) & 0.019 \\
+weibo\_tech & Qwen3-30B-A3B & L0 & 0.209 & 0.297 & $+6.2$ & $-0.01$ (0.22) & 0.071 \\
+ &  & L1$^{s}$ & 0.097 & 0.264 & $+5.3$ & $-0.01$ (0.27) & 0.071 \\
+ &  & L2$^{s}$ & 0.214$^{c}$ & 0.265 & $+5.3$ & $-0.01$ (0.27) & 0.071 \\
+ & GPT-4o-Mini & L0$^{t}$ & --$^{t}$ & 0.374 & $+8.4$ & $-0.04$ (0.16) & 0.071 \\
+ & Qwen3-8B & L0$^{e}$ & 0.174 & 0.273 & $+5.6$ & $+0.01$ (0.22) & 0.071 \\
+ &  & L1$^{e,s}$ & 0.116 & 0.331 & $+7.2$ & $-0.01$ (0.23) & 0.071 \\
+\bottomrule
+\end{tabular}
+\end{table}
